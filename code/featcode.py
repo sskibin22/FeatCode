@@ -11,6 +11,7 @@ class FeatCode:
         self.__conn = sqlite3.connect('data/problems.db')
         self.__cursor = self.__conn.cursor()
     def close_db_connection(self):
+        self.__cursor.close()
         self.__conn.close()
     def create_table(self):
         table_exists = self.__cursor.execute("""SELECT name 
@@ -54,6 +55,22 @@ class FeatCode:
         
         self.__cursor.execute('''DELETE FROM PROBLEMS WHERE ID = ?''',(id,))
         self.__conn.commit()
+    
+    def mark_problem_as_seen(self, id: int):
+        self.__cursor.execute('''UPDATE PROBLEMS SET SEEN = 1 WHERE ID = ?;''',(id,))
+        self.__conn.commit()
+        
+    def mark_problem_as_unseen(self, id: int):
+        self.__cursor.execute('''UPDATE PROBLEMS SET SEEN = 0 WHERE ID = ?;''',(id,))
+        self.__conn.commit()
+    
+    def get_all_seen_problems(self):
+        seen = self.__cursor.execute('''SELECT * FROM PROBLEMS WHERE SEEN = 1;''').fetchall()
+        return [row[0] for row in seen]
+    
+    def get_all_unseen_problems(self):
+        unseen = self.__cursor.execute('''SELECT * FROM PROBLEMS WHERE SEEN = 0;''').fetchall()
+        return [row[0] for row in unseen]
     
     def get_problem_by_id(self, id: int):
         problem = self.__cursor.execute('''SELECT * FROM PROBLEMS WHERE ID = ?;''',(id,)).fetchone()
