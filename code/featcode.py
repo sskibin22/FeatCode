@@ -1,18 +1,24 @@
 import sqlite3
+import bs4
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-from time import sleep
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 class FeatCode:
     def __init__(self):
         self.__conn = None
         self.__cursor = None
+        
     def open_db_connection(self):
         self.__conn = sqlite3.connect('data/problems.db')
         self.__cursor = self.__conn.cursor()
+        
     def close_db_connection(self):
         self.__cursor.close()
         self.__conn.close()
+        
     def create_table(self):
         table_exists = self.__cursor.execute("""SELECT name 
                                                 FROM sqlite_master 
@@ -33,18 +39,38 @@ class FeatCode:
         if url_exists:
             print("Problem already exists in table.")
             return
+    
         try:
-            browser = webdriver.Chrome()
-            browser.get(url)
-            browser.execute_script("return document.getElementsByTagName('html')[0].innerHTML")
-            sleep(5)
-            problem_description = browser.find_element(By.CLASS_NAME, "_1l1MA")
+            options = Options()
+            options.add_argument('--headless')
+            options.add_argument("--log-level=3")
+            driver = webdriver.Chrome(options=options)
+            driver.get(url)
+
+            WebDriverWait(driver, 30).until(
+                EC.visibility_of_element_located((By.CLASS_NAME, "_1l1MA"))) 
+
+            html = driver.page_source
+            soup = bs4.BeautifulSoup(html, "html.parser")
+
+            title = url.split('/')[-2].replace('-', ' ').title()
+            title_html = f'<div id="title"><strong>{title}</strong></div>\n' 
+            description_html = str(soup.find("div", {"class": "_1l1MA"}))
+            
+            replace = ['<code>', '</code>']
+            for rep in replace:
+                description_html = description_html.replace(rep, '')
+                    
+            problem_description = title_html + description_html
+            
         except:
-            print('Error: Invalid URL')
+            print('ERROR: invalid URL')
+            driver.quit()
+            
         else:
-            title = url.split('/')[-2].replace('-', ' ')
-            self.__conn.execute('''INSERT INTO PROBLEMS (TITLE,URL,PROMPT,SEEN) VALUES(?,?,?,0)''', (title, url, problem_description.text)) 
+            self.__conn.execute('''INSERT INTO PROBLEMS (TITLE,URL,PROMPT,SEEN) VALUES(?,?,?,0)''', (title, url, problem_description)) 
             self.__conn.commit()
+            driver.quit()
         
     def remove_problem(self, id: int):
         table_empty = self.__cursor.execute("SELECT count(*) FROM PROBLEMS;").fetchone()[0] <= 0
