@@ -33,14 +33,18 @@ class FeatCode:
         if url_exists:
             print("Problem already exists in table.")
             return
-        browser = webdriver.Chrome()
-        browser.get(url)
-        browser.execute_script("return document.getElementsByTagName('html')[0].innerHTML")
-        sleep(5)
-        problem_description = browser.find_element(By.CLASS_NAME, "_1l1MA")
-        title = url.split('/')[-2].replace('-', ' ')
-        self.__conn.execute('''INSERT INTO PROBLEMS (TITLE,URL,PROMPT,SEEN) VALUES(?,?,?,0)''', (title, url, problem_description.text)) 
-        self.__conn.commit()
+        try:
+            browser = webdriver.Chrome()
+            browser.get(url)
+            browser.execute_script("return document.getElementsByTagName('html')[0].innerHTML")
+            sleep(5)
+            problem_description = browser.find_element(By.CLASS_NAME, "_1l1MA")
+        except:
+            print('Error: Invalid URL')
+        else:
+            title = url.split('/')[-2].replace('-', ' ')
+            self.__conn.execute('''INSERT INTO PROBLEMS (TITLE,URL,PROMPT,SEEN) VALUES(?,?,?,0)''', (title, url, problem_description.text)) 
+            self.__conn.commit()
         
     def remove_problem(self, id: int):
         table_empty = self.__cursor.execute("SELECT count(*) FROM PROBLEMS;").fetchone()[0] <= 0
