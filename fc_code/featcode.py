@@ -33,6 +33,10 @@ class FeatCode:
                 SEEN        INTEGER                               NOT NULL);''')
         else:
             print('Table "PROBLEMS" already exists in database.')
+
+    def add_col(self, col_name : str):
+        self.__cursor.execute(f'''ALTER TABLE PROBLEMS ADD COLUMN {col_name} TEXT;''')
+        self.__conn.commit()
             
     def add_problem(self, url: str):
         url_exists = bool(self.__cursor.execute('''SELECT count(*) FROM PROBLEMS WHERE URL = ?;''',(url,)).fetchone()[0])
@@ -93,6 +97,9 @@ class FeatCode:
     def mark_problem_as_unseen(self, id: int):
         self.__cursor.execute('''UPDATE PROBLEMS SET SEEN = 0 WHERE ID = ?;''',(id,))
         self.__conn.commit()
+
+    def get_table(self):
+        return self.__cursor.execute('''SELECT * FROM PROBLEMS;''').fetchall()
     
     def get_all_seen_problems(self):
         seen = self.__cursor.execute('''SELECT * FROM PROBLEMS WHERE SEEN = 1;''').fetchall()
@@ -115,6 +122,11 @@ class FeatCode:
             print(f'SEEN: {"TRUE" if problem[4] > 0 else "FALSE"}')
             print('-------------------------------------------------')
             print(f'PROMPT: {problem[3]}')
+            print('-------------------------------------------------')
+            if problem[5]:
+                print(f'USOL: {problem[5]}')
+            else:
+                print(f'USOL: None')
             print('=================================================')
         else:
             print("Problem does not exist in table.")
@@ -132,4 +144,9 @@ class FeatCode:
             print(f'SEEN: {"TRUE" if problem[4] > 0 else "FALSE"}')
             print('-------------------------------------------------')
             print(f'PROMPT: {problem[3]}')
+            print('-------------------------------------------------')
+            if problem[5]:
+                print(f'USOL: {problem[5]}')
+            else:
+                print(f'USOL: None')
             print('=================================================')
