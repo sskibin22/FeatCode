@@ -30,7 +30,8 @@ class FeatCode:
                 TITLE       TEXT                                  NOT NULL,
                 URL         TEXT                                  NOT NULL,
                 PROMPT      TEXT                                  NOT NULL,
-                SEEN        INTEGER                               NOT NULL);''')
+                SEEN        INTEGER                               NOT NULL,
+                USOL        TEXT);''')
         else:
             print('Table "PROBLEMS" already exists in database.')
 
@@ -38,11 +39,11 @@ class FeatCode:
         self.__cursor.execute(f'''ALTER TABLE PROBLEMS ADD COLUMN {col_name} TEXT;''')
         self.__conn.commit()
             
-    def add_problem(self, url: str):
+    def add_problem(self, url: str) -> tuple[int, str]:
         url_exists = bool(self.__cursor.execute('''SELECT count(*) FROM PROBLEMS WHERE URL = ?;''',(url,)).fetchone()[0])
         if url_exists:
             print("Problem already exists in table.")
-            return
+            return (0, None)
     
         try:
             options = Options()
@@ -70,25 +71,28 @@ class FeatCode:
         except:
             print('ERROR: invalid URL')
             driver.quit()
+            return (-1, None)
             
         else:
             self.__conn.execute('''INSERT INTO PROBLEMS (TITLE,URL,PROMPT,SEEN) VALUES(?,?,?,0)''', (title, url, problem_description)) 
             self.__conn.commit()
             driver.quit()
+            return (1, title)
         
-    def remove_problem(self, id: int):
+    def remove_problem(self, title : str) -> int:
         table_empty = self.__cursor.execute("SELECT count(*) FROM PROBLEMS;").fetchone()[0] <= 0
         if table_empty:
             print('Table is empty.')
-            return
+            return 0
         
-        id_exists = bool(self.__cursor.execute('''SELECT count(*) FROM PROBLEMS WHERE ID = ?;''',(id,)).fetchone()[0])
-        if not id_exists:
+        prob_exists = bool(self.__cursor.execute('''SELECT count(*) FROM PROBLEMS WHERE TITLE = ?;''',(title,)).fetchone()[0])
+        if not prob_exists:
             print("Problem does not exist in table.")
-            return
+            return -1
         
-        self.__cursor.execute('''DELETE FROM PROBLEMS WHERE ID = ?''',(id,))
+        self.__cursor.execute('''DELETE FROM PROBLEMS WHERE TITLE = ?''',(title,))
         self.__conn.commit()
+        return 1
     
     def mark_problem_as_seen(self, id: int):
         self.__cursor.execute('''UPDATE PROBLEMS SET SEEN = 1 WHERE ID = ?;''',(id,))
@@ -150,3 +154,4 @@ class FeatCode:
             else:
                 print(f'USOL: None')
             print('=================================================')
+        return problem
