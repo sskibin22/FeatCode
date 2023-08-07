@@ -1,3 +1,6 @@
+# FeatCode Implementation :: Testing
+# author: Scott Skibin
+
 from featcode import *
 
 fc = FeatCode()
@@ -7,5 +10,6 @@ fc.open_db_connection()
 # fc.add_problem('https://leetcode.com/problems/binary-tree-upside-down/')
 # fc.get_random_problem()
 # fc.add_col('USOL')
-fc.get_random_problem()
+# fc.get_random_problem()
+fc.add_col('TIME')
 fc.close_db_connection()

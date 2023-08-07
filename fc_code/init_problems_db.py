@@ -1,6 +1,10 @@
+# FeatCode Implementation :: Init Table
+# author: Scott Skibin
+
 from featcode import *
 import csv
 
+# Initialize the data/problems.db database, create the PROBLEMS table and fill it with all of the LeetCode problems in data/default_urls.txt
 fc = FeatCode()
 fc.open_db_connection()
 fc.create_table()

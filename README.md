@@ -30,4 +30,4 @@ console.log(csvContent)
 Unfortunately, some repeat problems were copied into the file so I wrote preprocess/clean_data.py to get rid of the repeats and place the cleaned dataset into a new .txt file called "data/default_urls.txt".
 
 ## Creating the PROBLEMS database with SQLite and Python
-At this point I could run code/init_problems_db.py to initialize and populate the PROBLEMS table using the sqlite3 library and the "data/default_urls.txt" data file.
+At this point I could run fc_code/init_problems_db.py to initialize and populate the PROBLEMS table using the sqlite3 library and the "data/default_urls.txt" data file.

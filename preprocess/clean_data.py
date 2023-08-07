@@ -1,3 +1,6 @@
+# FeatCode Preprocessing
+# author: Scott Skibin
+
 premium_probs = ["missing ranges",
                  "flatten 2d vector",
                  "meeting rooms ii",
