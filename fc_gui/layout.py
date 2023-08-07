@@ -1,7 +1,9 @@
 import sys
 import os
+import webbrowser as wb
 sys.path.append(os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'fc_code')))
 from functools import partial
+from PIL import Image
 from featcode import *
 from settings import *
 import tkinter as tk
@@ -9,6 +11,7 @@ from tkinter import ttk
 import customtkinter as ctk
 from tkinter import messagebox as mb
 from tkhtmlview import HTMLLabel
+
 
 # def stylename_elements_options(stylename):
 #     '''Function to expose the options of every element associated to a widget
@@ -89,15 +92,23 @@ class Header(ctk.CTkFrame):
                   sticky='nsew')
         
         self.create_rand_button()
+        if not self.parent.main_win:
+            self.create_stopwatch()
         
     def create_rand_button(self):
         func = None
+        s = None
         if self.parent.main_win:
             func  = self.create_problem_window
         else:
             func = self.repop_problem_window
-        rand_button = FCButton(self, 'Randomize', HEADER_HEIGHT-16, func)
-        rand_button.pack(pady=8)
+            s = 'left'
+        rand_button = FCButton(self, 'Randomize', 68, func)
+        rand_button.pack(side=s, pady=4, padx=4)
+    
+    def create_stopwatch(self):
+        stopwatch = Stopwatch(self)
+        stopwatch.pack(side='right', pady=4, padx=4)
     
     def create_problem_window(self):
          prob = self.parent.fc.get_random_problem()
@@ -114,7 +125,7 @@ class FCButton(ctk.CTkButton):
         super().__init__(parent,
                          text=name,
                          text_color=TABLE_TEXT_COLOR,
-                         font=TABLE_FONT,
+                         font=FC_BUTTON_FONT,
                          height=h, 
                          fg_color=DEFAULT_BG_COLOR,
                          border_color='white',
@@ -122,13 +133,75 @@ class FCButton(ctk.CTkButton):
                          border_width=1, 
                          command=cmd)
         
+
+class Stopwatch(ctk.CTkFrame):
+    def __init__(self, parent):
+        super().__init__(parent, fg_color=DEFAULT_BG_COLOR, border_color='white', border_width=1)
+        self.update_time = ''
+        self.running = False
+        self.hours = 0
+        self.minutes = 0
+        self.seconds = 0
+
+        self.columnconfigure(index=0, weight=1)
+        self.columnconfigure(index=1, weight=1)
+        self.columnconfigure(index=2, weight=1)
+        self.rowconfigure(index=0, weight=4)
+        self.rowconfigure(index=1, weight=1)
+
+        self.display_label = ctk.CTkLabel(self, text='00:00:00', font=('Times', 30, 'bold'), bg_color=SWITCH_ENABLED_COLOR, height=30)
+        self.display_label.grid(row=0, column=0, columnspan=3, sticky='nsew', padx=5, pady=(5, 0))
+
+        self.play_button = ctk.CTkButton(self, text="Start", command=self.start, font=('Courier New', 11, 'bold'), fg_color=DEFAULT_FG_COLOR, width=45, height=20)
+        self.play_button.grid(row=1, column=0, sticky='ns', padx=4, pady=4)
+
+        self.pause_button = ctk.CTkButton(self, text="Pause", command=self.pause, font=('Courier New', 11, 'bold'), fg_color=DEFAULT_FG_COLOR, width=45, height=20)
+        self.pause_button.grid(row=1, column=1, sticky='ns', pady=4)
+
+        self.reset_button = ctk.CTkButton(self, text="Reset", command=self.reset, font=('Courier New', 11, 'bold'), fg_color=TABLE_SELECTED_COLOR, width=45, height=20)
+        self.reset_button.grid(row=1, column=2, sticky='ns', padx=4, pady=4)
+
+    def start(self):
+        if not self.running:
+            self.display_label.after(1000)
+            self.update()
+            self.running = True
+
+    def pause(self):
+        if self.running:
+            self.display_label.after_cancel(self.update_time)
+            self.running = False
+
+    def reset(self):
+        if self.running:
+            self.display_label.after_cancel(self.update_time)
+            self.running = False
+        self.hours, self.minutes, self.seconds = 0, 0, 0
+        self.display_label.configure(text='00:00:00')
+
+    def update(self):
+        self.seconds += 1
+        if self.seconds == 60:
+            self.minutes += 1
+            self.seconds = 0
+        if self.minutes == 60:
+            self.hours += 1
+            self.minutes = 0
+        hours_string = f'{self.hours}' if self.hours > 9 else f'0{self.hours}'
+        minutes_string = f'{self.minutes}' if self.minutes > 9 else f'0{self.minutes}'
+        seconds_string = f'{self.seconds}' if self.seconds > 9 else f'0{self.seconds}'
+        self.display_label.configure(text=hours_string + ':' + minutes_string + ':' + seconds_string)
+        self.update_time = self.display_label.after(1000, self.update)
+        
 #TODO: implement double click event for table       
 class MyTreeview(ttk.Treeview):
     def __init__(self, parent : ctk.CTkFrame):
         super().__init__(parent, columns=COL_NAMES, show='headings', padding = TV_INNER_PAD)
+        self.parent = parent
         self.tag_configure('oddrow', background=DEFAULT_BG_COLOR)
         self.tag_configure('evenrow', background=DEFAULT_FG_COLOR)
         self.row_idx = 0
+        self.bind('<Double-Button-1>', self.create_problem_window)
 
     def heading(self, column, sort_by=None, **kwargs):
         if sort_by and not hasattr(kwargs, 'command'):
@@ -159,6 +232,13 @@ class MyTreeview(ttk.Treeview):
     def _sort_by_name(self, column, reverse):
         self._sort(column, reverse, str, self._sort_by_name)
 
+    def create_problem_window(self, event):
+         focused = self.focus()
+         if focused:
+            selected = self.item(focused)
+            prob = self.parent.parent.fc.get_problem_by_title(selected['values'][0])
+            ProblemWindow(prob, self.parent.parent.fc)
+
     # def _sort_by_date(self, column, reverse):
     #     def _str_to_datetime(string):
     #         return datetime.strptime(string, "%Y-%m-%d %H:%M:%S")
@@ -182,6 +262,7 @@ class TFrame(ctk.CTkFrame):
 
         self.create_table_header()
         self.table = self.create_table()
+        self.fill_table()
 
     def add_problem(self, url : str):
         errcode, title = self.parent.fc.add_problem(url.get())
@@ -238,6 +319,13 @@ class TFrame(ctk.CTkFrame):
                    columnspan=2,
                    sticky='nsew', 
                    pady = 4)
+        
+        # Table header refresh button
+        refresh_img = ctk.CTkImage(light_image=Image.open('fc_gui/assets/refresh_30.png'), size=(30, 30))
+
+        refresh_button = ctk.CTkButton(frame, text='', image=refresh_img, command=self.refresh_table, width=30, fg_color=DEFAULT_FG_COLOR, hover_color=TABLE_SELECTED_COLOR)
+        refresh_button.pack(side='left', pady=T_ENTRY_PAD_Y, padx=(8, 0))
+
         # Table header URL input entry
         entry = ctk.CTkEntry(frame, 
                              height=T_ENTRY_HEIGHT, 
@@ -319,18 +407,34 @@ class TFrame(ctk.CTkFrame):
         # table.tag_configure('oddrow', background=DEFAULT_BG_COLOR)
         # table.tag_configure('evenrow', background=DEFAULT_FG_COLOR)
         # Populate table
+        # self.fill_table(table)
+        # for i, row in enumerate(self.parent.fc.get_table()):
+        #     t = ('oddrow',)
+        #     if i % 2 == 0:
+        #         t = ('evenrow',)
+        #     table.insert(parent = '', index=tk.END, values = (row[1], row[4]), tags=t)
+        #     table.row_idx = i
+        return table
+    
+    def clear_table(self):
+        for iid in self.table.get_children(''):
+            self.table.delete(iid)
+    
+    def fill_table(self):
         for i, row in enumerate(self.parent.fc.get_table()):
             t = ('oddrow',)
             if i % 2 == 0:
                 t = ('evenrow',)
-            table.insert(parent = '', index=tk.END, values = (row[1], row[4]), tags=t)
-            table.row_idx = i
-        
-        return table
+            self.table.insert(parent = '', index=tk.END, values = (row[1], row[4]), tags=t)
+            self.table.row_idx = i
+
+    def refresh_table(self):
+        self.clear_table()
+        self.fill_table()
     
 class ProblemWindow(ctk.CTkToplevel):
     def __init__(self, problem, featcode):
-        super().__init__(fg_color=DEFAULT_BG_COLOR)
+        super().__init__(fg_color=DEFAULT_BG_COLOR, takefocus=True)
         self.main_win = False
         self.problem_data = problem
         self.fc = featcode
@@ -340,30 +444,42 @@ class ProblemWindow(ctk.CTkToplevel):
 
         # Grid settings
         self.columnconfigure(0, weight=1)
-        self.columnconfigure(1, weight=8)
+        # self.columnconfigure(1, weight=8)
         self.rowconfigure(0)
         self.rowconfigure(1, weight=1)
 
         # Frames
         self.header_frame = Header(self, 2)
-        self.desc_frame = DescriptionFrame(self)
-        self.input_frame = InputFrame(self)
+        self.paned_frame = PanedFrame(self)
+        # self.desc_frame = DescriptionFrame(self)
+        # self.input_frame = InputFrame(self)
 
     def repopulate_window(self):
         self.title(self.problem_data[1])
-        self.desc_frame = DescriptionFrame(self)
+        # self.desc_frame = DescriptionFrame(self)
+        self.paned_frame = PanedFrame(self)
 
-    
+class PanedFrame(tk.PanedWindow):
+    def __init__(self, parent : ctk.CTkToplevel):
+        super().__init__(parent, bg = DEFAULT_BG_COLOR, orient='horizontal', bd=8, sashwidth=8)
+        self.parent = parent
+        self.grid(row=1, column=0, sticky='nsew')
+
+        self.desc_frame = DescriptionFrame(self)
+        self.add(self.desc_frame, minsize=MIN_WIDTH, sticky='nsew')
+
+        self.input_frame = InputFrame(self)
+        self.add(self.input_frame, sticky='nsew')
 
 class DescriptionFrame(ctk.CTkFrame):
     def __init__(self, parent : ctk.CTk):
         super().__init__(parent, fg_color=DEFAULT_BG_COLOR)
         self.parent = parent
-        self.grid(row=1, 
-                  column=0, 
-                  sticky='nsew', 
-                  padx=TFRAME_PAD_X, 
-                  pady=TFRAME_PAD_Y)
+        # self.grid(row=1, 
+        #           column=0, 
+        #           sticky='nsew', 
+        #           padx=TFRAME_PAD_X, 
+        #           pady=TFRAME_PAD_Y)
         
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1)
@@ -374,8 +490,8 @@ class DescriptionFrame(ctk.CTkFrame):
         self.create_html_description()
 
     def create_html_description(self):
-        html_label = HTMLLabel(self, html=self.parent.problem_data[3], background=DEFAULT_BG_COLOR, cursor='arrow')
-        html_label.grid(row=1, column=0, sticky='ns')
+        html_label = HTMLLabel(self, html=self.parent.parent.problem_data[3], background='white', cursor='arrow', borderwidth=4, relief='groove') #.parent
+        html_label.grid(row=1, column=0, sticky='nsew')
 
         scrollbar = ctk.CTkScrollbar(self,
                                 orientation="vertical",
@@ -396,11 +512,29 @@ class DescriptionFrame(ctk.CTkFrame):
                    columnspan=2,
                    sticky='nsew', 
                    pady = 4)
-        
-        link_button = FCButton(frame, 'LeetCode', T_ENTRY_HEIGHT, lambda:print('link button clicked'))
+            
+        link_button = FCButton(frame, 'LeetCode', T_ENTRY_HEIGHT, lambda: wb.open(self.parent.parent.problem_data[2]))
         link_button.pack(side='left', pady=T_ENTRY_PAD_Y, padx=T_ENTRY_PAD_X)
 
-        #TODO: seen/unseen switch
+        def switch_event():
+            title = self.parent.parent.problem_data[1]
+            if switch_var.get() == 0:
+                self.parent.parent.fc.mark_problem_as_unseen(title)
+            else:
+                self.parent.parent.fc.mark_problem_as_seen(title)
+
+            self.parent.parent.problem_data = self.parent.parent.fc.get_problem_by_title(title)
+
+        switch_var = tk.IntVar(value=self.parent.parent.problem_data[4])
+        switch = ctk.CTkSwitch(frame, text="Seen", 
+                               command=switch_event, 
+                               variable=switch_var, 
+                               onvalue=1, 
+                               offvalue=0,
+                               fg_color=SWITCH_ENABLED_COLOR,
+                               button_color=DEFAULT_BG_COLOR,
+                               progress_color=TABLE_SELECTED_COLOR)
+        switch.pack(side='right', pady=T_ENTRY_PAD_Y, padx=T_ENTRY_PAD_X)
         
 
 class InputFrame(ctk.CTkFrame):
@@ -408,11 +542,11 @@ class InputFrame(ctk.CTkFrame):
         super().__init__(parent, fg_color=DEFAULT_BG_COLOR)
         self.parent = parent
         self.tb_str = tk.StringVar()
-        self.grid(row=1, 
-                  column=1, 
-                  sticky='nsew', 
-                  padx=TFRAME_PAD_X, 
-                  pady=TFRAME_PAD_Y)
+        # self.grid(row=1, 
+        #           column=1, 
+        #           sticky='nsew', 
+        #           padx=TFRAME_PAD_X, 
+        #           pady=TFRAME_PAD_Y)
         
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1)
@@ -423,8 +557,8 @@ class InputFrame(ctk.CTkFrame):
         self.text_box = self.create_text_box()
         
     def create_text_box(self):
-        text_box = ctk.CTkTextbox(self, fg_color=DEFAULT_BG_COLOR, border_color=DEFAULT_FG_COLOR, border_width=TB_BORDER_W, scrollbar_button_color=DEFAULT_FG_COLOR, wrap='none')
-        text_box.grid(row=1, column=0, sticky='nsew', padx=TFRAME_PAD_X, pady=TFRAME_PAD_Y)
+        text_box = ctk.CTkTextbox(self, fg_color=DEFAULT_BG_COLOR, border_color=DEFAULT_FG_COLOR, border_width=TB_BORDER_W, scrollbar_button_color=DEFAULT_FG_COLOR, wrap='none', font=('Courier New', 18))
+        text_box.grid(row=1, column=0, sticky='nsew') #, padx=TFRAME_PAD_X, pady=TFRAME_PAD_Y
         font = tk.font.Font(font=text_box.cget('font'))
         tab = font.measure('    ')
 
@@ -443,14 +577,21 @@ class InputFrame(ctk.CTkFrame):
                    sticky='nsew', 
                    pady = 4)
         
+        #TODO: save button functionality
         save_button = FCButton(frame, 'Save', T_ENTRY_HEIGHT, self.save_input_text)
         save_button.pack(side='left', pady=T_ENTRY_PAD_Y, padx=T_ENTRY_PAD_X)
 
-        #TODO: add clear/load buttons
+        clear_button = FCButton(frame, 'Clear', T_ENTRY_HEIGHT, self.clear_input_text)
+        clear_button.pack(side='left', pady=T_ENTRY_PAD_Y)
+
+        #TODO: load button
 
     def save_input_text(self):
         input = self.text_box.get("1.0",'end-1c')
         print(input)
+
+    def clear_input_text(self):
+        self.text_box.delete("1.0",'end-1c')
         
 
 

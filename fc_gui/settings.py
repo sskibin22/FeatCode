@@ -3,10 +3,12 @@ DEFAULT_FG_COLOR = '#8375ba'  # '#6a57b3'
 DEFAULT_BG_COLOR = '#b1a7d6'   # '#8375ba'
 TABLE_TEXT_COLOR = 'black'
 TABLE_SELECTED_COLOR = '#4352de'
+SWITCH_ENABLED_COLOR = '#6a57b3'
 
 #Fonts
 TABLE_FONT = ('Calibri', 15,)
 TABLE_FONT_BOLD = ('Calibri', 15, 'bold')
+FC_BUTTON_FONT = ('Calibri', 20)
 
 # Main window settings
 MAIN_TITLE = 'FeatCode'
@@ -31,7 +33,7 @@ TABLE_ROW_HEIGHT = 25
 COL_NAMES = ('problem', 'seen')
 
 # Table Entry settings
-T_ENTRY_HEIGHT = 26
+T_ENTRY_HEIGHT = 30
 T_ENTRY_WIDTH = MIN_WIDTH
 
 T_ENTRY_PAD_X = 8

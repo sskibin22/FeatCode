@@ -94,12 +94,12 @@ class FeatCode:
         self.__conn.commit()
         return 1
     
-    def mark_problem_as_seen(self, id: int):
-        self.__cursor.execute('''UPDATE PROBLEMS SET SEEN = 1 WHERE ID = ?;''',(id,))
+    def mark_problem_as_seen(self, title: str):
+        self.__cursor.execute('''UPDATE PROBLEMS SET SEEN = 1 WHERE TITLE = ?;''',(title,))
         self.__conn.commit()
         
-    def mark_problem_as_unseen(self, id: int):
-        self.__cursor.execute('''UPDATE PROBLEMS SET SEEN = 0 WHERE ID = ?;''',(id,))
+    def mark_problem_as_unseen(self, title: str):
+        self.__cursor.execute('''UPDATE PROBLEMS SET SEEN = 0 WHERE TITLE = ?;''',(title,))
         self.__conn.commit()
 
     def get_table(self):
@@ -113,8 +113,8 @@ class FeatCode:
         unseen = self.__cursor.execute('''SELECT * FROM PROBLEMS WHERE SEEN = 0;''').fetchall()
         return [row[0] for row in unseen]
     
-    def get_problem_by_id(self, id: int):
-        problem = self.__cursor.execute('''SELECT * FROM PROBLEMS WHERE ID = ?;''',(id,)).fetchone()
+    def get_problem_by_title(self, title: str):
+        problem = self.__cursor.execute('''SELECT * FROM PROBLEMS WHERE TITLE = ?;''',(title,)).fetchone()
         if problem:
             print('=================================================')
             print(f'ID: {problem[0]}')
@@ -134,6 +134,8 @@ class FeatCode:
             print('=================================================')
         else:
             print("Problem does not exist in table.")
+
+        return problem
 
     def get_random_problem(self):
         problem = self.__cursor.execute('''SELECT * FROM PROBLEMS WHERE SEEN == 0 ORDER BY RANDOM() LIMIT 1;''').fetchone()
