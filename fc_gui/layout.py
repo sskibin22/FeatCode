@@ -20,6 +20,7 @@ from tkhtmlview import HTMLLabel
 #TODOs:
 # -center windows on creation
 # -get icon to work with Toplevel window
+# -make it so that only one instance of the same problem window is allowed to be open at a time
 
 # Root FeatCode GUI object that inherits customtkinter's CTk object
 # This is the will be instantiated in app.py to run the application 
@@ -470,6 +471,7 @@ class ProblemWindow(ctk.CTkToplevel):
         self.title(self.problem_data[1])
         self.geometry(f'{DEFAULT_PW_WIDTH}x{DEFAULT_PW_HEIGHT}')
         self.minsize(MIN_WIDTH, MIN_HEIGHT)
+        self.after(250, lambda: self.iconbitmap('fc_gui/assets/FeatCode_logo.ico'))
 
         # Grid settings
         self.columnconfigure(0, weight=1)
