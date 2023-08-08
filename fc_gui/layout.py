@@ -18,7 +18,8 @@ from tkinter import messagebox as mb
 from tkhtmlview import HTMLLabel
 
 #TODOs:
-# center windows on creation
+# -center windows on creation
+# -get icon to work with Toplevel window
 
 # Root FeatCode GUI object that inherits customtkinter's CTk object
 # This is the will be instantiated in app.py to run the application 
@@ -30,6 +31,7 @@ class FCGUI(ctk.CTk):
         self.title(MAIN_TITLE)
         self.geometry(f'{DEFAULT_WIDTH}x{DEFAULT_HEIGHT}')
         self.minsize(MIN_WIDTH, MIN_HEIGHT)
+        self.iconbitmap('fc_gui/assets/FeatCode_logo.ico')
 
         # Grid layout settings
         self.columnconfigure(0, weight=1)
