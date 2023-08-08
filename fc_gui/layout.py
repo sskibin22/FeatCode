@@ -19,7 +19,6 @@ from tkhtmlview import HTMLLabel
 
 #TODOs:
 # -center windows on creation
-# -Selenium is no longer able to get html from LeetCode url's (find fix?)
 
 # Root FeatCode GUI object that inherits customtkinter's CTk object
 # This is the will be instantiated in app.py to run the application 
@@ -516,7 +515,6 @@ class ProblemWindow(ctk.CTkToplevel):
 
         # Configure closing behavior
         def on_closing():
-            print(f'[{self.problem_data[1]}] is closing...')
             self.parent.open_windows[self.problem_data[0]] = [False, None]
             self.destroy()
 

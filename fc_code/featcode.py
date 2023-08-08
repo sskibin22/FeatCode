@@ -69,18 +69,18 @@ class FeatCode:
             # Setup selenium webdriver options
             options = Options()
             options.add_argument('--headless')
-            options.add_argument("--log-level=3")
+            options.add_argument('--log-level=3')
             driver = webdriver.Chrome(options=options)
 
             # Get locate the url within the Chrome driver
             driver.get(url)
 
-            # <div class = '_1l1MA'> is the div tag associated with the problem description html for a LeetCode problem
+            # <div class = 'xFUwe'> is the div tag associated with the problem description html for a LeetCode problem
             # the selenium Chrome driver is used to search through the html source code as well as any java dependent html in order to find this div tag
             # WebDriverWait waits 15 seconds or until the given class name is found before it terminates
-            WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.CLASS_NAME, 'xFUwe'))) # class name may need to be changed depending on LeetCode's html updates
+            WebDriverWait(driver, 15).until(EC.visibility_of_element_located((By.CLASS_NAME, 'xFUwe'))) # class name may need to be changed depending on LeetCode's html updates
 
-            # bs4 is used to parse the html file that was found with the '_1l1MA' class name in it
+            # bs4 is used to parse the html file that was found with the 'xFUwe' class name in it
             html = driver.page_source
             soup = bs4.BeautifulSoup(html, "html.parser")
 
@@ -89,7 +89,7 @@ class FeatCode:
             title_html = f'<div id="title"><strong>{title}</strong></div>\n'
 
             # The description html is then scraped from the html file found using selenium
-            description_html = str(soup.find("div", {"class": "_1l1MA"}))
+            description_html = str(soup.find('div', {'class': 'xFUwe'}))
             
             # The description html is then parsed for any <code> or </code> tags in order to remove them (they do not play nice with the HTMLLabel class)
             replace = ['<code>', '</code>']

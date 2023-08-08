@@ -16,4 +16,5 @@ fc.open_db_connection()
 
 # fc.add_problem('https://leetcode.com/problems/strong-password-checker/')
 # fc.get_problem_by_title('Strong Password Checker')
+# fc.remove_problem('Strong Password Checker')
 fc.close_db_connection()
