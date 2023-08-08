@@ -77,9 +77,8 @@ class FeatCode:
 
             # <div class = '_1l1MA'> is the div tag associated with the problem description html for a LeetCode problem
             # the selenium Chrome driver is used to search through the html source code as well as any java dependent html in order to find this div tag
-            # WebDriverWait waits 30 seconds or until the given class name is found before it terminates
-            WebDriverWait(driver, 30).until(
-                EC.visibility_of_element_located((By.CLASS_NAME, "_1l1MA"))) 
+            # WebDriverWait waits 15 seconds or until the given class name is found before it terminates
+            WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.CLASS_NAME, 'xFUwe'))) # class name may need to be changed depending on LeetCode's html updates
 
             # bs4 is used to parse the html file that was found with the '_1l1MA' class name in it
             html = driver.page_source
@@ -163,6 +162,15 @@ class FeatCode:
     def get_all_unseen_problems(self):
         unseen = self.__cursor.execute('''SELECT * FROM PROBLEMS WHERE SEEN = 0;''').fetchall()
         return [row[0] for row in unseen]
+    
+    # Return a list of all problem ids
+    def get_all_problem_ids(self):
+        probs = self.__cursor.execute('''SELECT * FROM PROBLEMS;''').fetchall()
+        return [row[0] for row in probs]
+
+    # Return id of given problem title
+    def get_problem_id(self, title: str):
+        return self.__cursor.execute('''SELECT ID FROM PROBLEMS WHERE TITLE = ?;''',(title,)).fetchone()[0]
     
     # Return a problem's data from the PROBLEMS table given it's title
     def get_problem_by_title(self, title: str):

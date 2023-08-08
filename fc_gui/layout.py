@@ -19,16 +19,18 @@ from tkhtmlview import HTMLLabel
 
 #TODOs:
 # -center windows on creation
-# -get icon to work with Toplevel window
-# -make it so that only one instance of the same problem window is allowed to be open at a time
+# -Selenium is no longer able to get html from LeetCode url's (find fix?)
 
 # Root FeatCode GUI object that inherits customtkinter's CTk object
 # This is the will be instantiated in app.py to run the application 
 class FCGUI(ctk.CTk):
     def __init__(self):
         super().__init__(fg_color=DEFAULT_BG_COLOR)
-        # Main window settings
+        # Class attributes
         self.main_win = True
+        self.open_windows = {}
+
+        # Main window settings
         self.title(MAIN_TITLE)
         self.geometry(f'{DEFAULT_WIDTH}x{DEFAULT_HEIGHT}')
         self.minsize(MIN_WIDTH, MIN_HEIGHT)
@@ -42,8 +44,12 @@ class FCGUI(ctk.CTk):
         # Initialize FeatCode object for backend API
         self.fc = FeatCode()
 
-        # open FeatCode database connection
+        # Open FeatCode database connection
         self.fc.open_db_connection()
+
+        # Fill open_windows dictionary in order to track which problem windows are open
+        for id in self.fc.get_all_problem_ids():
+            self.open_windows[id] = [False, None]
 
         # Main frames
         self.header_frame = Header(self, 1)
@@ -108,22 +114,36 @@ class Header(ctk.CTkFrame):
     # ProblemWindow inherts the CTkToplevel class from customtkinter and will spawn a new window
     # This method is called whenever the 'randomize' button is pressed within the root window
     def create_problem_window(self):
-         prob = self.parent.fc.get_random_problem()
-         ProblemWindow(prob, self.parent.fc)
+        prob = self.parent.fc.get_random_problem()
+        if self.parent.open_windows[prob[0]][0]:
+            self.parent.open_windows[prob[0]][1].attributes('-topmost', 1)
+            self.parent.open_windows[prob[0]][1].attributes('-topmost', 0)
+        else:
+            self.parent.open_windows[prob[0]][0] = True
+            self.parent.iconify()
+            self.parent.open_windows[prob[0]][1] = ProblemWindow(self.parent, prob)
+
     
     # Repopulate the parent ProblemWindow with a newly selected random problem's data
     # This method is called whenever the 'randomize' button is pressed within the problem window
     def repop_problem_window(self):
-        prob = self.parent.fc.get_random_problem()
-        self.parent.problem_data = prob
-        self.parent.repopulate_window()
+        prob = self.parent.parent.fc.get_random_problem()
+        if self.parent.parent.open_windows[prob[0]][0]:
+            self.parent.parent.open_windows[prob[0]][1].attributes('-topmost', 1)
+            self.parent.parent.open_windows[prob[0]][1].attributes('-topmost', 0)
+        else:
+            self.parent.parent.open_windows[prob[0]][0] = True
+            self.parent.parent.open_windows[self.parent.problem_data[0]] = [False, None]
+            self.parent.problem_data = prob
+            self.parent.repopulate_window()
+            self.parent.parent.open_windows[prob[0]][1] = self.parent
     
     # Save the current time of the Stopwatch object to the problems database
     # This method is called whenever the 'save time' button is pressed within the problem window
     def save_time(self):
         if mb.askyesno(title='Save Time', message='Are you sure you want to overwrite your last saved time?'):
             time = self.stopwatch.curr_time
-            self.parent.fc.save_time(time, self.parent.problem_data[0])
+            self.parent.parent.fc.save_time(time, self.parent.problem_data[0])
 
 # A custom button object to keep button designs consistent throught application
 # FCButton inherits from customtkinter's CTkButton class
@@ -270,7 +290,12 @@ class FCTreeview(ttk.Treeview):
          if focused:
             selected = self.item(focused)
             prob = self.parent.parent.fc.get_problem_by_title(selected['values'][0])
-            ProblemWindow(prob, self.parent.parent.fc)    
+            if self.parent.parent.open_windows[prob[0]][0]:
+                self.parent.parent.open_windows[prob[0]][1].attributes('-topmost', 1)
+                self.parent.parent.open_windows[prob[0]][1].attributes('-topmost', 0)
+            else:
+                self.parent.parent.open_windows[prob[0]][0] = True
+                self.parent.parent.open_windows[prob[0]][1] = ProblemWindow(self.parent.parent, prob)
 
 # Table frame that will contain the layout and widgets for the table in the root window
 # TFrame object inherits from customtkinter's CTkFrame class
@@ -400,6 +425,8 @@ class TFrame(ctk.CTkFrame):
                 t = ('evenrow',)
             self.table.insert(parent = '', index=tk.END, values = (title, '00:00:00', 0), tags=t)
             self.table.row_idx += 1
+            pid = self.parent.fc.get_problem_id(title)
+            self.parent.open_windows[pid] = [False, None]
             mb.showinfo(title='Problem Added', message=f'Succesfully added [{title}] to table.')
             self.entry_str.set('')
     
@@ -412,7 +439,9 @@ class TFrame(ctk.CTkFrame):
             if answer:
                 sel_idx = self.table.index(focused)
                 selected = self.table.item(focused)
-                errcode = self.parent.fc.remove_problem(selected['values'][0])
+                title = selected['values'][0]
+                pid = self.parent.fc.get_problem_id(title)
+                errcode = self.parent.fc.remove_problem(title)
                 if errcode == 0:
                     mb.showerror(title='Error', message='Problems table is empty.')
                 if errcode == -1:
@@ -429,6 +458,9 @@ class TFrame(ctk.CTkFrame):
                             t = ('evenrow',)
                         self.table.item(iid, tags = t)
                         i += 1
+                    if self.parent.open_windows[pid][0]:
+                        self.parent.open_windows[pid][1].destroy()
+                    del self.parent.open_windows[pid]
                     mb.showinfo(title='Problem Removed', message=f"Succesfully removed [{selected['values'][0]}] from table.")
         else:
             mb.showerror(title='Error', message='No problem selected.')
@@ -461,11 +493,11 @@ class TFrame(ctk.CTkFrame):
 # This is the 'problem window' that displays a selected problems description 
 # and allows the user to practice within a textbox widget
 class ProblemWindow(ctk.CTkToplevel):
-    def __init__(self, problem, featcode):
+    def __init__(self, parent, problem):
         super().__init__(fg_color=DEFAULT_BG_COLOR, takefocus=True)
         self.main_win = False
+        self.parent = parent
         self.problem_data = problem
-        self.fc = featcode
 
         # Problem window settings
         self.title(self.problem_data[1])
@@ -482,12 +514,22 @@ class ProblemWindow(ctk.CTkToplevel):
         self.header_frame = Header(self, 2)
         self.paned_frame = PanedFrame(self)
 
+        # Configure closing behavior
+        def on_closing():
+            print(f'[{self.problem_data[1]}] is closing...')
+            self.parent.open_windows[self.problem_data[0]] = [False, None]
+            self.destroy()
+
+        self.protocol("WM_DELETE_WINDOW", on_closing)
+
     # This method repopulates the current problem window with a new ranomly selected problem
     # It does so by instantiating a new PanedFrame class that fills it's contents with new problem data 
-    # This new PanedFrame replaces the current paned_frame variable, leaving the old PanedFrame object for grabage collection
+    # This new PanedFrame replaces the current paned_frame variable, and the old PanedFrame object is destroyed
     def repopulate_window(self):
         self.title(self.problem_data[1])
+        temp = self.paned_frame
         self.paned_frame = PanedFrame(self)
+        temp.destroy()
 
 # The PanedFrame class inherits from tkinter's PanedWindow class
 # The PanedWindow class allows the user to have control over how much space each frame in the window takes up horizontally
@@ -551,11 +593,11 @@ class DescriptionFrame(ctk.CTkFrame):
         def switch_event():
             title = self.parent.parent.problem_data[1]
             if switch_var.get() == 0:
-                self.parent.parent.fc.mark_problem_as_unseen(title)
+                self.parent.parent.parent.fc.mark_problem_as_unseen(title)
             else:
-                self.parent.parent.fc.mark_problem_as_seen(title)
+                self.parent.parent.parent.fc.mark_problem_as_seen(title)
 
-            self.parent.parent.problem_data = self.parent.parent.fc.get_problem_by_title(title)
+            self.parent.parent.problem_data = self.parent.parent.parent.fc.get_problem_by_title(title)
 
         # Create a switch widget and place in description header frame
         switch_var = tk.IntVar(value=self.parent.parent.problem_data[4])
@@ -647,7 +689,7 @@ class InputFrame(ctk.CTkFrame):
     def save_input_text(self):
         if mb.askyesno(title='Save Work', message='Are you sure you want to overwrite your last save?'):
             input = self.text_box.get("1.0",'end-1c')
-            self.parent.parent.fc.save_solution(input, self.parent.parent.problem_data[0])
+            self.parent.parent.parent.fc.save_solution(input, self.parent.parent.problem_data[0])
         
     # This method clears the textbox
     def clear_input_text(self):
