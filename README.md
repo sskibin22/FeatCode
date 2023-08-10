@@ -2,7 +2,7 @@
   src="readme_images/FeatCode_logo.png"
   alt="fc_logo"
   title="FeatCode Logo"
-  style="display: inline-block; margin: 0 auto; max-width: 200px">
+  style="display: block; margin: auto; width: 25%; max-width: 300px">
 
 # FeatCode
 A take on LeetCode that brings a more realistic interview experience into the practice space for programmers looking to hone their code solving skills a little more.
