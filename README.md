@@ -41,6 +41,20 @@ At this point I could run fc_code/init_problems_db.py to initialize and populate
 ## Front-End Development
 Python's tkinter library (along with some third-party versions of tkinter including customtkinter and tkhtmlview) are used for the GUI development of the FeatCode application.  More details on the FCGUI class can be seen in the comments of 'fc_gui/layout.py'.
 
+### Main Window (appears on startup)
+<img
+  src="readme_images/FeatCode_root_win.png"
+  alt="fc_root"
+  title="FeatCode Main Window"
+  style="display: block; margin: auto; width: 50%; max-width: 300px">
+
+### Problem Window
+<img
+  src="readme_images/FeatCode_problem_win.png"
+  alt="fc_prob"
+  title="FeatCode Problem Window"
+  style="display: block; margin: auto; width: 50%; max-width: 300px">
+
 ## Application Usage
 This section lists all of the features FeatCode provides and explains how to use them within the application.
 
