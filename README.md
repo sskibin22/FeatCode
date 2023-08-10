@@ -1,3 +1,5 @@
+[FeatCode Logo](readme_images/FeatCode_logo.png)
+
 # FeatCode
 A take on LeetCode that brings a more realistic interview experience into the practice space for programmers looking to hone their code solving skills a little more.
 
@@ -31,3 +33,11 @@ Unfortunately, some repeat problems were copied into the file so I wrote preproc
 
 ## Creating the PROBLEMS database with SQLite and Python
 At this point I could run fc_code/init_problems_db.py to initialize and populate the PROBLEMS table using the sqlite3 library and the "data/default_urls.txt" data file.
+
+## Front-End Development
+Python's tkinter library (along with some third-party versions of tkinter including customtkinter and tkhtmlview) are used for the GUI development of the FeatCode application.  More details on the FCGUI class can be seen in the comments of 'fc_gui/layout.py'.
+
+## Application Usage
+This section lists all of the features FeatCode provides and explains how to use them within the application.
+
+### Here is 
