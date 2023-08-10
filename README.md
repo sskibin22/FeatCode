@@ -43,14 +43,14 @@ Python's tkinter library (along with some third-party versions of tkinter includ
 
 ### Main Window (appears on startup)
 <img
-  src="readme_images/FeatCode_root_win.png"
+  src="readme_images/FeatCode_root_window.png"
   alt="fc_root"
   title="FeatCode Main Window"
   style="display: block; margin: auto; width: 50%; max-width: 300px">
 
 ### Problem Window
 <img
-  src="readme_images/FeatCode_problem_win.png"
+  src="readme_images/FeatCode_problem_window.png"
   alt="fc_prob"
   title="FeatCode Problem Window"
   style="display: block; margin: auto; width: 50%; max-width: 300px">
