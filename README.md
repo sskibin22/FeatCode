@@ -3,9 +3,15 @@
   alt="fc_logo"
   title="FeatCode Logo"
   style="display: block; margin: auto; width: 25%; max-width: 300px">
-
+  
 # FeatCode
 A take on LeetCode that brings a more realistic interview experience into the practice space for programmers looking to hone their code solving skills a little more.
+
+# Download and Run instructions
+1. Click the FeatCode link under 'releases' on the right side of this repository page.
+2. Click on FeatCode.exe to download the executable file to your computer.
+3. Follow the installer instructions and place the downloaded file somehwere easily accessible.
+4. Once the FeatCode file is installed open it and double click on the app file with the FeatCode logo icon next to it.
 
 ## Web-Scraping LeetCode's top interview problems with JavaScript
 This JS script was pasted into the console of chrome developer tools at https://leetcode.com/problemset/all/?listId=wpwgkgt&page=1 in order to scrape all of the top interview problem urls.  The urls are then printed to the console in csv format. From there, I manually copied the script output from the console and pasted it into a .txt file called 'data/leet_urls.txt'.
