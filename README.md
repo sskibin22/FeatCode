@@ -39,7 +39,7 @@ Unfortunately, some repeat problems were copied into the file so I wrote preproc
 At this point I could run fc_code/init_problems_db.py to initialize and populate the PROBLEMS table using the sqlite3 library and the "data/default_urls.txt" data file.
 
 ## Front-End Development
-Python's tkinter library (along with some third-party versions of tkinter including customtkinter and tkhtmlview) are used for the GUI development of the FeatCode application.  More details on the FCGUI class can be seen in the comments of 'fc_gui/layout.py'.
+Python's tkinter library (along with some third-party versions of tkinter including customtkinter and tkhtmlview) are used for the GUI development of the FeatCode application.  More details on the FCGUI class can be seen in the comments of 'fc_code/layout.py'.
 Here are screenshots of the two application windows that make up the FeatCode UI:
 
 ### Main Window (appears on startup)

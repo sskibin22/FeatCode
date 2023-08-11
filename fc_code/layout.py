@@ -3,14 +3,11 @@
 
 # Import libraries
 from datetime import datetime as dt
-import sys
-import os
 import webbrowser as wb
-sys.path.append(os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'fc_code')))
 from functools import partial
 from PIL import Image
-from featcode import *
-from settings import *
+from fc_code.featcode import *
+from fc_code.settings import *
 import tkinter as tk
 from tkinter import ttk
 import customtkinter as ctk
@@ -33,7 +30,7 @@ class FCGUI(ctk.CTk):
         self.title(MAIN_TITLE)
         self.geometry(f'{DEFAULT_WIDTH}x{DEFAULT_HEIGHT}')
         self.minsize(MIN_WIDTH, MIN_HEIGHT)
-        self.iconbitmap('fc_gui/assets/FeatCode_logo.ico')
+        self.iconbitmap('fc_code/assets/FeatCode_logo.ico')
 
         # Grid layout settings
         self.columnconfigure(0, weight=1)
@@ -341,7 +338,7 @@ class TFrame(ctk.CTkFrame):
                    pady = 4)
         
         # Create refresh button and place in frame
-        refresh_img = ctk.CTkImage(light_image=Image.open('fc_gui/assets/refresh_30.png'), size=(30, 30))
+        refresh_img = ctk.CTkImage(light_image=Image.open('fc_code/assets/refresh_30.png'), size=(30, 30))
 
         refresh_button = ctk.CTkButton(frame, text='', image=refresh_img, command=self.refresh_table, width=30, fg_color=DEFAULT_FG_COLOR, hover_color=TABLE_SELECTED_COLOR)
         refresh_button.pack(side='left', pady=T_ENTRY_PAD_Y, padx=(8, 0))
@@ -502,7 +499,7 @@ class ProblemWindow(ctk.CTkToplevel):
         self.title(self.problem_data[1])
         self.geometry(f'{DEFAULT_PW_WIDTH}x{DEFAULT_PW_HEIGHT}')
         self.minsize(MIN_WIDTH, MIN_HEIGHT)
-        self.after(250, lambda: self.iconbitmap('fc_gui/assets/FeatCode_logo.ico'))
+        self.after(250, lambda: self.iconbitmap('fc_code/assets/FeatCode_logo.ico'))
 
         # Grid settings
         self.columnconfigure(0, weight=1)
