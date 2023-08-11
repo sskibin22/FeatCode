@@ -7,7 +7,7 @@
 # FeatCode
 A take on LeetCode that brings a more realistic interview experience into the practice space for programmers looking to hone their code solving skills a little more.
 
-# Download and Run instructions
+# Download, Install and Run instructions
 1. Click the FeatCode link under 'releases' on the right side of this repository page.
 2. Click on FeatCode.exe to download the executable file to your computer.
 3. Follow the installer instructions and place the downloaded file somehwere easily accessible.
